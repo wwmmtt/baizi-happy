@@ -1,1 +1,5 @@
 lunar_python
+
+# 以下两个只有「混合检索」（search_hybrid.py 的 vector / hybrid 模式）才需要，手动装：
+# numpy
+# sentence-transformers

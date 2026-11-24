@@ -21,3 +21,7 @@ desktop.ini
 # 本地测试产物
 *.log
 *.tmp
+
+# 向量索引（体积大且绑定模型版本，不随包发布，自己 --build 生成）
+data/*.npy
+*.npy

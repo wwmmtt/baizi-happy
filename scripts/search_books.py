@@ -24,8 +24,7 @@ try:
 except Exception:
     pass
 
-# 语料随技能包分发：data/chunks_all.jsonl，相对脚本所在目录定位（换电脑也能用）
-CHUNKS = Path(__file__).resolve().parent.parent / "data" / "chunks_all.jsonl"
+from paths import CORPUS as CHUNKS  # 默认 <包根>/data/chunks_all.jsonl；可用 BAZI_DATA 覆盖
 
 # 严格同义词/别名词典（确定性展开，替代向量模型的模糊匹配）
 ALIASES = {
@@ -157,7 +156,7 @@ def main():
     args = ap.parse_args()
 
     if not CHUNKS.exists():
-        print(json.dumps({"error": f"语料缺失：{CHUNKS}（技能包应自带 data/chunks_all.jsonl）"}, ensure_ascii=False))
+        print(json.dumps({"error": "chunks_all.jsonl 不存在，请先运行 build_corpus.py"}, ensure_ascii=False))
         sys.exit(1)
 
     kws = expand([w for w in args.query.split() if w.strip()])
@@ -169,8 +168,9 @@ def main():
     for c in load():
         if args.book and c.get("book") != args.book:
             continue
-        if args.topic and args.topic not in c.get("topics", []):
-            continue
+        # --topic 改为软偏好，不再硬排除：56% 的块 topics 为空，
+        # 硬筛会漏掉《论劫财》这类没打标签却极度相关的内容。
+        # 主题加权已在 score() 内（命中×1.35 / 不命中×0.9）。
         s = score(c, kws, args.topic, args.flat)
         if s > 0:
             scored.append((s, c))
